@@ -1,87 +1,166 @@
+ <!-- videos.component.html -->
 <div class="netflix-container">
-    <!-- Navbar -->
-    <div class="netflix-navbar">
-      <div class="netflix-logo">NETFLIX</div>
-      <div class="netflix-user-menu">
-        <div class="netflix-user-info">
-          <span class="netflix-username">{{currentUser?.name}} {{currentUser?.lastname}}</span>
-          <span class="netflix-user-email">{{currentUser?.email}}</span>
-        </div>
-        <button class="netflix-upload-button" (click)="openUploadModal()">Subir video</button>
-        <button class="netflix-logout-button" (click)="logout()">Cerrar sesión</button>
+  <!-- Navbar -->
+  <div class="netflix-navbar">
+    <div class="netflix-logo">NETFLIX</div>
+    <div class="netflix-user-menu">
+      <div class="netflix-user-info">
+        <span class="netflix-username">{{currentUser?.name}} {{currentUser?.lastname}}</span>
+        <span class="netflix-user-email">{{currentUser?.email}}</span>
+        <span *ngIf="offlineMode" class="netflix-offline-badge">OFFLINE</span>
       </div>
-    </div>
-  
-    <!-- Contenido principal -->
-    <div class="netflix-videos-container">
-      <h2 class="netflix-videos-title">Todos los videos</h2>
-      
-      <div class="netflix-videos-grid">
-        <div *ngFor="let video of videos" class="netflix-video-card">
-          <div class="netflix-video-thumbnail" (click)="playVideo(video)">
-            <img [src]="getThumbnailUrl(video.url)" alt="Miniatura del video">
-            <div class="netflix-play-overlay">
-              <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
-              </svg>
-            </div>
-          </div>
-          <div class="netflix-video-info">
-            <h3 class="netflix-video-title">{{video.title}}</h3>
-            <p class="netflix-video-description">{{video.description}}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  
-    <!-- Modal para subir video -->
-    <div *ngIf="showUploadModal" class="netflix-modal-overlay">
-      <div class="netflix-modal">
-        <h3 class="netflix-modal-title">Subir nuevo video</h3>
-        <form (submit)="uploadVideo()" class="netflix-modal-form">
-          <div class="netflix-form-group">
-            <label>Título</label>
-            <input type="text" [(ngModel)]="newVideo.title" name="title" required>
-          </div>
-          <div class="netflix-form-group">
-            <label>Descripción</label>
-            <textarea [(ngModel)]="newVideo.description" name="description"></textarea>
-          </div>
-          <div class="netflix-form-group">
-            <label>URL del video</label>
-            <input type="text" [(ngModel)]="newVideo.url" name="url" required>
-          </div>
-          <div class="netflix-modal-buttons">
-            <button type="button" class="netflix-modal-cancel" (click)="closeUploadModal()">Cancelar</button>
-            <button type="submit" class="netflix-modal-submit">Subir video</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  
-    <!-- Modal para reproducir video -->
-    <div *ngIf="showVideoModal" class="netflix-video-modal-overlay" (click)="closeVideoModal()">
-      <div class="netflix-video-modal-content" (click)="$event.stopPropagation()">
-        <button class="netflix-video-modal-close" (click)="closeVideoModal()">
-          <svg viewBox="0 0 24 24">
-            <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-          </svg>
+      <div class="upload-buttons">
+        <button class="netflix-upload-button" (click)="openUploadModal()" [disabled]="offlineMode">
+          Subir video
         </button>
-        
-        <div class="netflix-video-player">
-          <iframe 
-            *ngIf="safeVideoUrl"
-            [src]="safeVideoUrl" 
-            frameborder="0" 
-            allowfullscreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
-          </iframe>
+        <button class="netflix-youtube-button" (click)="openYoutubeModal()" [disabled]="offlineMode">
+          Agregar YouTube
+        </button>
+      </div>
+      <button class="netflix-logout-button" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="netflix-videos-container">
+    <h2 class="netflix-videos-title">Todos los videos</h2>
+    
+    <div class="netflix-videos-grid">
+      <div *ngFor="let video of videos" class="netflix-video-card">
+        <div class="netflix-video-thumbnail" (click)="playVideo(video)">
+          <img [src]="getThumbnailUrl(video.url)" alt="Miniatura del video">
+          <div class="netflix-play-overlay">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+            </svg>
+          </div>
+          <div *ngIf="video.is_cached && isCacheValid(video)" class="netflix-offline-badge">OFFLINE</div>
         </div>
-        
-        <div class="netflix-video-modal-info" *ngIf="currentVideo">
-          <h3>{{currentVideo.title}}</h3>
-          <p>{{currentVideo.description}}</p>
+        <div class="netflix-video-info">
+          <h3 class="netflix-video-title">{{video.title}}</h3>
+          <p class="netflix-video-description">{{video.description}}</p>
+          <div class="netflix-video-actions">
+            <button *ngIf="!isYoutubeUrl(video.url) && (!video.is_cached || !isCacheValid(video))" 
+                    class="netflix-cache-button" (click)="cacheVideo(video, $event)">
+              Guardar offline
+            </button>
+            <button *ngIf="!isYoutubeUrl(video.url) && video.is_cached" 
+                    class="netflix-clear-cache-button" (click)="clearCache(video, $event)">
+              Eliminar caché
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal para subir video local -->
+  <div *ngIf="showUploadModal" class="netflix-modal-overlay">
+    <div class="netflix-modal">
+      <h3 class="netflix-modal-title">Subir video local</h3>
+      <form (ngSubmit)="uploadVideo()" class="netflix-modal-form" enctype="multipart/form-data">
+        <div class="netflix-form-group">
+          <label>Título</label>
+          <input type="text" [(ngModel)]="uploadForm.title" name="title" required>
+        </div>
+        <div class="netflix-form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="uploadForm.description" name="description"></textarea>
+        </div>
+        
+        <div class="netflix-form-group">
+          <label>Archivo de video</label>
+          <input type="file" accept="video/*" (change)="onFileSelected($event)" name="file" required>
+        </div>
+        
+        <div *ngIf="uploadForm.file" class="netflix-form-group">
+          <p>Archivo seleccionado: {{uploadForm.file.name}}</p>
+        </div>
+        
+        <div *ngIf="uploadProgress !== null" class="netflix-form-group">
+          <div class="upload-progress">
+            <progress [value]="uploadProgress" max="100"></progress>
+            <span>{{uploadProgress}}%</span>
+          </div>
+        </div>
+        
+        <div class="netflix-modal-buttons">
+          <button type="button" class="netflix-modal-cancel" 
+                  (click)="closeUploadModal()" [disabled]="uploadInProgress">
+            Cancelar
+          </button>
+          <button type="submit" class="netflix-modal-submit" 
+                  [disabled]="uploadInProgress || !uploadForm.file">
+            {{uploadInProgress ? 'Subiendo...' : 'Subir video'}}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para agregar video de YouTube -->
+  <div *ngIf="showYoutubeModal" class="netflix-modal-overlay">
+    <div class="netflix-modal">
+      <h3 class="netflix-modal-title">Agregar video de YouTube</h3>
+      <form (ngSubmit)="addYouTubeVideo()" class="netflix-modal-form">
+        <div class="netflix-form-group">
+          <label>Título</label>
+          <input type="text" [(ngModel)]="youtubeForm.title" name="title" required>
+        </div>
+        <div class="netflix-form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="youtubeForm.description" name="description"></textarea>
+        </div>
+        <div class="netflix-form-group">
+          <label>URL de YouTube</label>
+          <input type="text" [(ngModel)]="youtubeForm.url" name="url" required placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+        
+        <div class="netflix-modal-buttons">
+          <button type="button" class="netflix-modal-cancel" (click)="closeYoutubeModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="netflix-modal-submit">
+            Agregar video
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para reproducir video -->
+  <div *ngIf="showVideoModal" class="netflix-video-modal-overlay" (click)="closeVideoModal()">
+    <div class="netflix-video-modal-content" (click)="$event.stopPropagation()">
+      <button class="netflix-video-modal-close" (click)="closeVideoModal()">
+        <svg viewBox="0 0 24 24">
+          <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+        </svg>
+      </button>
+      
+      <div class="netflix-video-player">
+        <iframe 
+          *ngIf="safeVideoUrl"
+          [src]="safeVideoUrl" 
+          frameborder="0" 
+          allowfullscreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+        </iframe>
+      </div>
+      
+      <div class="netflix-video-modal-info" *ngIf="currentVideo">
+        <h3>{{currentVideo.title}}</h3>
+        <p>{{currentVideo.description}}</p>
+        <div *ngIf="!isYoutubeUrl(currentVideo.url)">
+          <button *ngIf="!currentVideo.is_cached || !isCacheValid(currentVideo)" 
+                  class="netflix-cache-button" (click)="cacheVideo(currentVideo)">
+            Guardar para ver offline
+          </button>
+          <button *ngIf="currentVideo.is_cached" 
+                  class="netflix-clear-cache-button" (click)="clearCache(currentVideo)">
+            Eliminar caché
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
