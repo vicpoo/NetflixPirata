@@ -1,0 +1,103 @@
+<div class="netflix-auth-container">
+    <div class="netflix-auth-overlay">
+      <!-- Barra de navegación superior -->
+      <div class="netflix-navbar">
+        <div class="netflix-logo">NETFLIX</div>
+      </div>
+  
+      <!-- Contenedor del formulario -->
+      <div class="netflix-auth-form">
+        <h1 class="netflix-auth-title">Regístrate</h1>
+  
+        <!-- Mensaje de error -->
+        <div *ngIf="errorMessage" class="netflix-error-message">
+          {{ errorMessage }}
+        </div>
+  
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="netflix-form">
+          <!-- Campos del formulario -->
+          <div class="netflix-form-group">
+            <input 
+              type="text" 
+              formControlName="name" 
+              placeholder="Nombre"
+              class="netflix-input"
+              [class.netflix-input-error]="name?.invalid && name?.touched">
+            <div *ngIf="name?.invalid && name?.touched" class="netflix-error-text">
+              El nombre es requerido
+            </div>
+          </div>
+  
+          <div class="netflix-form-group">
+            <input 
+              type="text" 
+              formControlName="lastname" 
+              placeholder="Apellido"
+              class="netflix-input"
+              [class.netflix-input-error]="lastname?.invalid && lastname?.touched">
+            <div *ngIf="lastname?.invalid && lastname?.touched" class="netflix-error-text">
+              El apellido es requerido
+            </div>
+          </div>
+  
+          <div class="netflix-form-group">
+            <input 
+              type="text" 
+              formControlName="username" 
+              placeholder="Nombre de usuario"
+              class="netflix-input"
+              [class.netflix-input-error]="username?.invalid && username?.touched">
+            <div *ngIf="username?.invalid && username?.touched" class="netflix-error-text">
+              El nombre de usuario es requerido
+            </div>
+          </div>
+  
+          <div class="netflix-form-group">
+            <input 
+              type="email" 
+              formControlName="email" 
+              placeholder="Email"
+              class="netflix-input"
+              [class.netflix-input-error]="email?.invalid && email?.touched">
+            <div *ngIf="email?.invalid && email?.touched" class="netflix-error-text">
+              <span *ngIf="email?.errors?.['required']">El email es requerido</span>
+              <span *ngIf="email?.errors?.['email']">Ingresa un email válido</span>
+            </div>
+          </div>
+  
+          <div class="netflix-form-group">
+            <input 
+              type="password" 
+              formControlName="password" 
+              placeholder="Contraseña"
+              class="netflix-input"
+              [class.netflix-input-error]="password?.invalid && password?.touched">
+            <div *ngIf="password?.invalid && password?.touched" class="netflix-error-text">
+              <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
+              <span *ngIf="password?.errors?.['minlength']">Mínimo 8 caracteres</span>
+            </div>
+          </div>
+  
+          <!-- Botón de submit -->
+          <button 
+            type="submit" 
+            [disabled]="registerForm.invalid || isLoading"
+            class="netflix-submit-button">
+            <span *ngIf="!isLoading">Registrarse</span>
+            <span *ngIf="isLoading" class="netflix-spinner"></span>
+          </button>
+        </form>
+  
+        <!-- Enlaces adicionales -->
+        <div class="netflix-auth-footer">
+          <p class="netflix-auth-text">
+            ¿Ya tienes cuenta? 
+            <a routerLink="/login" class="netflix-auth-link">Inicia sesión</a>
+          </p>
+          <p class="netflix-captcha-text">
+            Esta página está protegida por Google reCAPTCHA para comprobar que no eres un robot.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>

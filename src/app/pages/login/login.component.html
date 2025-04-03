@@ -1,0 +1,77 @@
+<div class="netflix-login-container">
+  <div class="netflix-login-overlay">
+    <!-- Barra de navegación superior -->
+    <div class="netflix-navbar">
+      <div class="netflix-logo">NETFLIX</div>
+    </div>
+
+    <!-- Contenedor del formulario -->
+    <div class="netflix-login-form">
+      <h1 class="netflix-login-title">Iniciar sesión</h1>
+
+      <!-- Mensaje de error -->
+      <div *ngIf="errorMessage" class="netflix-error-message">
+        {{ errorMessage }}
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="netflix-form">
+        <!-- Campo Email -->
+        <div class="netflix-form-group">
+          <input 
+            type="email" 
+            formControlName="email" 
+            placeholder="Email"
+            class="netflix-input"
+            [class.netflix-input-error]="email?.invalid && email?.touched">
+          <div *ngIf="email?.invalid && email?.touched" class="netflix-error-text">
+            <span *ngIf="email?.errors?.['required']">El email es requerido</span>
+            <span *ngIf="email?.errors?.['email']">Ingresa un email válido</span>
+          </div>
+        </div>
+
+        <!-- Campo Contraseña -->
+        <div class="netflix-form-group">
+          <input 
+            type="password" 
+            formControlName="password" 
+            placeholder="Contraseña"
+            class="netflix-input"
+            [class.netflix-input-error]="password?.invalid && password?.touched">
+          <div *ngIf="password?.invalid && password?.touched" class="netflix-error-text">
+            <span *ngIf="password?.errors?.['required']">La contraseña es requerida</span>
+            <span *ngIf="password?.errors?.['minlength']">Mínimo 8 caracteres</span>
+          </div>
+        </div>
+
+        <!-- Botón de submit -->
+        <button 
+          type="submit" 
+          [disabled]="loginForm.invalid || isLoading"
+          class="netflix-submit-button">
+          <span *ngIf="!isLoading">Iniciar sesión</span>
+          <span *ngIf="isLoading" class="netflix-spinner"></span>
+        </button>
+      </form>
+
+      <!-- Enlaces adicionales -->
+      <div class="netflix-login-footer">
+        <div class="netflix-login-options">
+          <div class="netflix-remember-me">
+            <input type="checkbox" id="remember">
+            <label for="remember">Recuérdame</label>
+          </div>
+          <a href="#" class="netflix-help-link">¿Necesitas ayuda?</a>
+        </div>
+        
+        <div class="netflix-signup-prompt">
+          <p>¿Primera vez en Netflix? 
+            <a routerLink="/register" class="netflix-signup-link">Suscríbete ahora</a>
+          </p>
+          <p class="netflix-captcha-text">
+            Esta página está protegida por Google reCAPTCHA para comprobar que no eres un robot.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
