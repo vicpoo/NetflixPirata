@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class UsuarioService {
-  private apiUrl = 'http://44.210.114.208:8000/';
+  private apiUrl = 'http://44.217.6.231:8000';
   private currentUserSubject: BehaviorSubject<AuthResponse | null>;
   public currentUser$: Observable<AuthResponse | null>;
 

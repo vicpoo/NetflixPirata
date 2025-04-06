@@ -8,7 +8,7 @@ import { Video, CreateVideoRequest } from '../interfaces/video.interface';
   providedIn: 'root'
 })
 export class VideoService {
-  readonly apiUrl = 'http://44.210.114.208:8000/';
+  readonly apiUrl = 'http://44.217.6.231:8000';
 
   constructor(private http: HttpClient) { }
 
